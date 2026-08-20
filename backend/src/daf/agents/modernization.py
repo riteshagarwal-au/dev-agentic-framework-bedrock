@@ -1,0 +1,120 @@
+"""Modernization Agent (Task 13.4).
+
+design.md Component 5: the Modernization Agent produces a modernization
+blueprint by combining corporate knowledge-base guidance (S3 KB MCP) with
+AWS Documentation MCP guidance, and reads Discovery's inventory artifact
+via the Filesystem MCP. Its MCP tool allowlist is
+`{AWS_DOCS, S3_KB, FILESYSTEM}` only (`daf.tools.allowlist`); it never
+calls GitHub/Terraform/AWS API CLI/Azure.
+
+Implements the `SpokeAgentProtocol` shape (`daf.pipeline.pipeline`) via
+duck typing rather than inheriting `SpokeAgent`/ABC — the same
+local-Protocol-for-DI convention `Supervisor` uses for its injected
+dependencies (see `daf.supervisor.supervisor.RunStateRepositoryProtocol`).
+"""
+
+from __future__ import annotations
+
+from typing import Any, Protocol
+
+from daf.agents.kb_conflict import detect_kb_conflict
+from daf.models.common import ArtifactRef, TokenUsage
+from daf.models.enums import ArtifactKind, ArtifactLocationKind, SpokeResultStatus, TaskType
+from daf.models.envelope import SpokeResult, TaskEnvelope
+from daf.models.types import AgentId
+from daf.pipeline.pipeline import AuditLog
+from daf.tools.allowlist import AgentRole, McpTool, enforce_tool_allowlist
+
+
+class S3KbClientProtocol(Protocol):
+    """Corporate knowledge-base guidance retrieval (S3 KB MCP)."""
+
+    def retrieve_guidance(self, topic: str) -> str: ...
+
+
+class AwsDocsClientProtocol(Protocol):
+    """AWS Documentation MCP guidance retrieval."""
+
+    def retrieve_guidance(self, topic: str) -> str: ...
+
+
+class FilesystemMcpClientProtocol(Protocol):
+    """Filesystem MCP — used here to read Discovery's inventory artifact."""
+
+    def read_file(self, path: str) -> str: ...
+
+
+class ModernizationAgent:
+    """Produces a modernization blueprint for a discovered application.
+
+    `output_schema` is always `SpokeResult` (Requirement 2.1): the
+    Modernization Agent does not define a stricter output schema of its
+    own beyond what every spoke agent already returns.
+    """
+
+    agent_id: AgentId = AgentId("modernization")
+    task_type: TaskType = TaskType.MODERNIZATION_PLAN
+    output_schema = SpokeResult
+
+    def __init__(
+        self,
+        s3_kb_client: S3KbClientProtocol,
+        aws_docs_client: AwsDocsClientProtocol,
+        filesystem_mcp_client: FilesystemMcpClientProtocol,
+        audit_log: AuditLog,
+    ) -> None:
+        self._s3_kb_client = s3_kb_client
+        self._aws_docs_client = aws_docs_client
+        self._filesystem_mcp_client = filesystem_mcp_client
+        self._audit_log = audit_log
+
+    def execute(self, envelope: TaskEnvelope, tier: Any) -> SpokeResult:
+        """`tier` is accepted but unused — the Router (Task 7.x) resolves
+        the model tier upstream of this call; the Modernization Agent
+        itself has no tier-dependent branching in Phase 1.
+        """
+        topic = envelope.task
+
+        enforce_tool_allowlist(AgentRole.MODERNIZATION, McpTool.S3_KB)
+        kb_guidance = self._s3_kb_client.retrieve_guidance(topic)
+
+        enforce_tool_allowlist(AgentRole.MODERNIZATION, McpTool.AWS_DOCS)
+        aws_docs_guidance = self._aws_docs_client.retrieve_guidance(topic)
+
+        enforce_tool_allowlist(AgentRole.MODERNIZATION, McpTool.FILESYSTEM)
+        inventory_ref = envelope.inputs.get("inventory")
+        inventory_path = inventory_ref.location if inventory_ref is not None else "inventory.json"
+        self._filesystem_mcp_client.read_file(inventory_path)
+
+        conflict = detect_kb_conflict(kb_guidance, aws_docs_guidance)
+        if conflict is not None:
+            notes = (
+                f"KB conflict detected: KB says {conflict.kb_guidance!r}, "
+                f"AWS Docs says {conflict.aws_docs_guidance!r}; followed KB guidance."
+            )
+            self._audit_log.write(
+                "kb_conflict_flagged",
+                {
+                    "trace_id": str(envelope.trace_id),
+                    "kb_guidance": conflict.kb_guidance,
+                    "aws_docs_guidance": conflict.aws_docs_guidance,
+                    "decision": conflict.decision,
+                },
+            )
+        else:
+            notes = "Modernization blueprint generated; KB and AWS Docs guidance were consistent."
+
+        output = ArtifactRef(
+            artifactId=f"blueprint-{envelope.trace_id}",
+            location=f"s3://daf-artifacts/{envelope.trace_id}/blueprint.json",
+            locationKind=ArtifactLocationKind.S3_URI,
+            kind=ArtifactKind.BLUEPRINT,
+        )
+
+        return SpokeResult(
+            output=output,
+            confidence=0.8,
+            tokensUsed=TokenUsage(tokensIn=0, tokensOut=0),
+            status=SpokeResultStatus.SUCCESS,
+            notes=notes,
+        )

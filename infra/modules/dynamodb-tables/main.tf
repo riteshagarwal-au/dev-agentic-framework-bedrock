@@ -1,0 +1,205 @@
+locals {
+  kms_key_arn = var.create_kms_key ? aws_kms_key.dynamodb[0].arn : var.kms_key_arn
+
+  run_state_table_name          = "${var.name_prefix}-run-state-${var.environment}"
+  run_counters_table_name       = "${var.name_prefix}-run-counters-${var.environment}"
+  gate_ticket_table_name        = "${var.name_prefix}-gate-ticket-${var.environment}"
+  dead_letter_record_table_name = "${var.name_prefix}-dead-letter-record-${var.environment}"
+
+  tags = merge(var.tags, {
+    Environment = var.environment
+    Purpose     = "dynamodb-run-persistence"
+  })
+}
+
+# ---------------------------------------------------------------------------
+# KMS key for DynamoDB table encryption (optional — a caller can instead
+# pass an existing key via kms_key_arn / create_kms_key = false), mirroring
+# the create-or-reuse pattern used by modules/state-backend.
+# ---------------------------------------------------------------------------
+
+resource "aws_kms_key" "dynamodb" {
+  count = var.create_kms_key ? 1 : 0
+
+  description             = "KMS key for DAF Phase 1 DynamoDB run-persistence tables (${var.environment})"
+  deletion_window_in_days = var.kms_key_deletion_window_in_days
+  enable_key_rotation     = true
+
+  tags = merge(var.tags, {
+    Name        = "${var.name_prefix}-dynamodb-${var.environment}-kms"
+    Environment = var.environment
+  })
+}
+
+resource "aws_kms_alias" "dynamodb" {
+  count = var.create_kms_key ? 1 : 0
+
+  name          = "alias/${var.name_prefix}-dynamodb-${var.environment}"
+  target_key_id = aws_kms_key.dynamodb[0].key_id
+}
+
+# ---------------------------------------------------------------------------
+# RunState table (design.md Model 1) — Requirement 8.1
+#
+# Partition key only: `runId`. `currentStepIndex` is a plain attribute on the
+# single item per run (not a sort key) — RunState is one evolving item per
+# run, not a growing collection of per-step items. Idempotent per-step-
+# boundary writes (Task 5.2's RunStateRepository) are achieved via a
+# conditional PutItem/UpdateItem against that single item, not via a
+# composite key. Read/written by RunStateRepository (Task 5.2).
+# ---------------------------------------------------------------------------
+
+resource "aws_dynamodb_table" "run_state" {
+  name         = local.run_state_table_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "runId"
+
+  attribute {
+    name = "runId"
+    type = "S"
+  }
+
+  server_side_encryption {
+    enabled     = true
+    kms_key_arn = local.kms_key_arn
+  }
+
+  point_in_time_recovery {
+    enabled = var.point_in_time_recovery_enabled
+  }
+
+  deletion_protection_enabled = var.deletion_protection_enabled
+
+  tags = merge(local.tags, {
+    Name  = local.run_state_table_name
+    Model = "RunState"
+  })
+}
+
+# ---------------------------------------------------------------------------
+# RunCounters table (design.md Model 2) — Requirements 4.5, 4.6, 8.1
+#
+# Partition key only: `runId`. One item per run, updated via the atomic
+# increment operation implemented by RunCountersRepository (Task 5.3).
+# ---------------------------------------------------------------------------
+
+resource "aws_dynamodb_table" "run_counters" {
+  name         = local.run_counters_table_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "runId"
+
+  attribute {
+    name = "runId"
+    type = "S"
+  }
+
+  server_side_encryption {
+    enabled     = true
+    kms_key_arn = local.kms_key_arn
+  }
+
+  point_in_time_recovery {
+    enabled = var.point_in_time_recovery_enabled
+  }
+
+  deletion_protection_enabled = var.deletion_protection_enabled
+
+  tags = merge(local.tags, {
+    Name  = local.run_counters_table_name
+    Model = "RunCounters"
+  })
+}
+
+# ---------------------------------------------------------------------------
+# GateTicket table (design.md Model 3) — Requirements 5.2, 5.3, 5.4, 5.7, 12.3
+#
+# Partition key: `ticketId`. A `runId` GSI lets `getPendingGates(runId)`
+# (Task 9.3) query all tickets for a run without a table scan. Read/written
+# by GateTicketRepository (Task 5.4).
+# ---------------------------------------------------------------------------
+
+resource "aws_dynamodb_table" "gate_ticket" {
+  name         = local.gate_ticket_table_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "ticketId"
+
+  attribute {
+    name = "ticketId"
+    type = "S"
+  }
+
+  attribute {
+    name = "runId"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "runId-index"
+    hash_key        = "runId"
+    projection_type = var.gsi_projection_type
+  }
+
+  server_side_encryption {
+    enabled     = true
+    kms_key_arn = local.kms_key_arn
+  }
+
+  point_in_time_recovery {
+    enabled = var.point_in_time_recovery_enabled
+  }
+
+  deletion_protection_enabled = var.deletion_protection_enabled
+
+  tags = merge(local.tags, {
+    Name  = local.gate_ticket_table_name
+    Model = "GateTicket"
+  })
+}
+
+# ---------------------------------------------------------------------------
+# DeadLetterRecord table (Requirement 8.3)
+#
+# Partition key: `deadLetterId`, a UUID generated by the repository layer
+# (Task 5.5) at write time, not by DynamoDB itself. A `runId` GSI supports
+# the list-by-run operation DeadLetterRecordRepository (Task 5.5) needs to
+# surface a run's dead-lettered failures (task envelope reference, error
+# detail, retry count, trace ID) to the HITL alert / portal.
+# ---------------------------------------------------------------------------
+
+resource "aws_dynamodb_table" "dead_letter_record" {
+  name         = local.dead_letter_record_table_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "deadLetterId"
+
+  attribute {
+    name = "deadLetterId"
+    type = "S"
+  }
+
+  attribute {
+    name = "runId"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "runId-index"
+    hash_key        = "runId"
+    projection_type = var.gsi_projection_type
+  }
+
+  server_side_encryption {
+    enabled     = true
+    kms_key_arn = local.kms_key_arn
+  }
+
+  point_in_time_recovery {
+    enabled = var.point_in_time_recovery_enabled
+  }
+
+  deletion_protection_enabled = var.deletion_protection_enabled
+
+  tags = merge(local.tags, {
+    Name  = local.dead_letter_record_table_name
+    Model = "DeadLetterRecord"
+  })
+}

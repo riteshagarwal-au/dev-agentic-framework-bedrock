@@ -1,0 +1,27 @@
+# OS / editor
+.DS_Store
+.vscode/*
+!.vscode/settings.json
+
+# Python (backend/)
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node (portal/)
+node_modules/
+dist/
+coverage/
+
+# Terraform (infra/)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+override.tf
+override.tf.json

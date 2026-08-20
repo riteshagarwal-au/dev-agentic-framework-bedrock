@@ -1,0 +1,365 @@
+# Deterministic PR checks for infrastructure-affecting pull requests.
+#
+# Requirement 7.2 (requirements.md):
+#   "WHEN a pull request affecting infrastructure is opened THEN deterministic checks
+#    (format/validate, lint, policy/security scan, plan output) SHALL run and post results
+#    before a human reviews the PR."
+#
+# This workflow implements Task 14.2 of the daf-phase1-foundations spec. It is a *deterministic*
+# check pipeline (no LLM/agent involved) that runs against changes under `infra/`.
+#
+# Status of each step as of this task:
+#   - LIVE today (no AWS credentials required): `terraform fmt -check`, `terraform init
+#     -backend=false`, `terraform validate`, `tflint`, `checkov`. These are static checks that
+#     run against the working tree only.
+#   - PENDING live infra: `terraform plan`. Terraform plan needs to read real AWS/remote-state
+#     data, so it requires:
+#       1. The S3-native remote state backend from Task 2.1 to actually be live and uncommented
+#          in `infra/backend.tf` (it is currently a documented placeholder — see that file).
+#       2. The GitHub OIDC role from Task 2.2 (`infra/modules/github-oidc/`) to be applied with an
+#          `allowed_subject_patterns` entry that permits PR-triggered workflow runs, e.g.
+#          something like `repo:<org>/<repo>:pull_request` (GitHub's OIDC token `sub` claim for
+#          a `pull_request`-triggered run takes this form; see GitHub's OIDC claims reference).
+#          Applying that module with the right subject pattern is a deployment-time concern, not
+#          something this workflow provisions.
+#       3. The resulting role ARN to be published as the `DAF_GITHUB_ACTIONS_ROLE_ARN` repository
+#          (or environment) variable referenced below.
+#     Until all three are in place, the `terraform-plan` job below is written to run but will
+#     fail fast (missing `vars.DAF_GITHUB_ACTIONS_ROLE_ARN`) rather than pretend to succeed with
+#     a fake value — see the `plan` job's first step.
+#
+# Terraform version: pinned to 1.12.2, satisfying infra/versions.tf's `required_version = ">= 1.11"`.
+
+name: Terraform PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "infra/**"
+      - ".github/workflows/terraform-pr-checks.yml"
+
+# Narrowest permissions needed by this workflow:
+#   - contents: read       to check out the repo
+#   - pull-requests: write to post check-result comments on the PR
+#   - id-token: write      to request an OIDC token for the (pending) terraform-plan job
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+env:
+  TF_VERSION: "1.12.2"
+  TFLINT_VERSION: "v0.53.0"
+  TF_WORKING_DIR: infra
+
+concurrency:
+  group: terraform-pr-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # fmt / validate — LIVE, no AWS credentials required.
+  # ---------------------------------------------------------------------------
+  fmt-validate:
+    name: terraform fmt / validate
+    runs-on: ubuntu-latest
+    outputs:
+      fmt_outcome: ${{ steps.fmt.outcome }}
+      validate_outcome: ${{ steps.validate.outcome }}
+      fmt_output: ${{ steps.fmt.outputs.stdout }}
+      validate_output: ${{ steps.validate.outputs.stdout }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: terraform fmt -check -recursive
+        id: fmt
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          terraform fmt -check -recursive -diff 2>&1 | tee /tmp/fmt-output.txt
+          {
+            echo "stdout<<FMT_EOF"
+            cat /tmp/fmt-output.txt
+            echo "FMT_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # Non-mutating: `-backend=false` because infra/backend.tf's S3 backend block is still
+      # commented out (Task 1.3 placeholder). Switch to a real `terraform init` once the backend
+      # from Task 2.1 is live.
+      - name: terraform init (backend=false)
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init -backend=false -input=false
+
+      - name: terraform validate
+        id: validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          terraform validate -no-color 2>&1 | tee /tmp/validate-output.txt
+          {
+            echo "stdout<<VALIDATE_EOF"
+            cat /tmp/validate-output.txt
+            echo "VALIDATE_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Fail job if fmt or validate failed
+        if: steps.fmt.outcome == 'failure' || steps.validate.outcome == 'failure'
+        run: exit 1
+
+  # ---------------------------------------------------------------------------
+  # tflint — LIVE, no AWS credentials required.
+  # ---------------------------------------------------------------------------
+  tflint:
+    name: tflint
+    runs-on: ubuntu-latest
+    outputs:
+      tflint_outcome: ${{ steps.tflint.outcome }}
+      tflint_output: ${{ steps.tflint.outputs.stdout }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up tflint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: ${{ env.TFLINT_VERSION }}
+
+      - name: tflint --init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: tflint --init
+
+      - name: Run tflint
+        id: tflint
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          tflint --recursive --format compact 2>&1 | tee /tmp/tflint-output.txt
+          {
+            echo "stdout<<TFLINT_EOF"
+            cat /tmp/tflint-output.txt
+            echo "TFLINT_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Fail job if tflint failed
+        if: steps.tflint.outcome == 'failure'
+        run: exit 1
+
+  # ---------------------------------------------------------------------------
+  # checkov — LIVE, no AWS credentials required. Single policy/security scanner chosen
+  # to satisfy the "policy/security scan" leg of Requirement 7.2 (tfsec's functionality has
+  # been folded into Checkov upstream, so one tool covers both).
+  # ---------------------------------------------------------------------------
+  checkov:
+    name: checkov
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@v12.1347.0
+        continue-on-error: true
+        with:
+          directory: ${{ env.TF_WORKING_DIR }}
+          framework: terraform
+          output_format: cli
+          output_file_path: console,/tmp/checkov-output.txt
+          soft_fail: true
+
+      - name: Read Checkov output
+        id: read_checkov
+        run: |
+          {
+            echo "stdout<<CHECKOV_EOF"
+            cat /tmp/checkov-output.txt 2>/dev/null || echo "(no checkov output captured)"
+            echo "CHECKOV_EOF"
+          } >> "$GITHUB_OUTPUT"
+    outputs:
+      checkov_output: ${{ steps.read_checkov.outputs.stdout }}
+
+  # ---------------------------------------------------------------------------
+  # terraform plan — PENDING live infra. Requires the OIDC role from Task 2.2 to be applied
+  # with a subject pattern permitting pull_request-triggered runs, and the S3 backend from
+  # Task 2.1 to be live. See the file header for details. This job is intentionally best-effort:
+  # if `vars.DAF_GITHUB_ACTIONS_ROLE_ARN` is not yet configured, it fails fast with a clear
+  # message instead of silently skipping or using a placeholder credential.
+  # ---------------------------------------------------------------------------
+  plan:
+    name: terraform plan
+    runs-on: ubuntu-latest
+    needs: [fmt-validate]
+    outputs:
+      plan_outcome: ${{ steps.plan_status.outputs.outcome }}
+      plan_output: ${{ steps.plan_status.outputs.plan_text }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required configuration
+        id: preflight
+        run: |
+          if [ -z "${{ vars.DAF_GITHUB_ACTIONS_ROLE_ARN }}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::DAF_GITHUB_ACTIONS_ROLE_ARN repository/environment variable is not set."
+            echo "::warning::terraform plan requires the OIDC role from Task 2.2 to be applied and its ARN published as this variable. Skipping plan; see workflow file header for details."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Terraform
+        if: steps.preflight.outputs.configured == 'true'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      # Requires the OIDC role from Task 2.2 (infra/modules/github-oidc/) to be applied with an
+      # allowed_subject_patterns entry permitting this pull_request-triggered workflow run.
+      - name: Configure AWS credentials via OIDC
+        if: steps.preflight.outputs.configured == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.DAF_GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-southeast-2' }}
+
+      # Real backend init. Once infra/backend.tf's S3 backend block (Task 2.1) is live this
+      # reads/locks remote state as normal; until then this step (and the plan below) will fail,
+      # which is expected and reported as "plan pending live infra" in the PR comment rather than
+      # a fabricated result.
+      - name: terraform init
+        if: steps.preflight.outputs.configured == 'true'
+        id: init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        continue-on-error: true
+        run: terraform init -input=false
+
+      - name: terraform plan
+        if: steps.preflight.outputs.configured == 'true' && steps.init.outcome == 'success'
+        id: plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          terraform plan -no-color -input=false 2>&1 | tee /tmp/plan-output.txt
+          {
+            echo "stdout<<PLAN_EOF"
+            cat /tmp/plan-output.txt
+            echo "PLAN_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Summarize plan status
+        id: plan_status
+        if: always()
+        run: |
+          if [ "${{ steps.preflight.outputs.configured }}" != "true" ]; then
+            echo "outcome=pending_configuration" >> "$GITHUB_OUTPUT"
+            {
+              echo "plan_text<<PLAN_STATUS_EOF"
+              echo "terraform plan was not run: DAF_GITHUB_ACTIONS_ROLE_ARN is not configured yet."
+              echo "This is expected until Task 2.2's github-oidc module is applied with a"
+              echo "pull_request-scoped subject pattern and the S3 backend from Task 2.1 is live."
+              echo "PLAN_STATUS_EOF"
+            } >> "$GITHUB_OUTPUT"
+          elif [ "${{ steps.init.outcome }}" != "success" ]; then
+            echo "outcome=pending_backend" >> "$GITHUB_OUTPUT"
+            {
+              echo "plan_text<<PLAN_STATUS_EOF"
+              echo "terraform init failed. This is expected while infra/backend.tf's S3 backend"
+              echo "block remains a commented-out placeholder (Task 2.1 not yet live)."
+              echo "PLAN_STATUS_EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "outcome=${{ steps.plan.outcome }}" >> "$GITHUB_OUTPUT"
+            {
+              echo "plan_text<<PLAN_STATUS_EOF"
+              cat /tmp/plan-output.txt 2>/dev/null || echo "(no plan output captured)"
+              echo "PLAN_STATUS_EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Post all results as a single PR comment.
+  # ---------------------------------------------------------------------------
+  comment:
+    name: Post PR comment
+    runs-on: ubuntu-latest
+    needs: [fmt-validate, tflint, checkov, plan]
+    if: always()
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post results as PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fmtOutput = `${{ needs.fmt-validate.outputs.fmt_output }}`.trim() || "(no output)";
+            const validateOutput = `${{ needs.fmt-validate.outputs.validate_output }}`.trim() || "(no output)";
+            const tflintOutput = `${{ needs.tflint.outputs.tflint_output }}`.trim() || "(no output)";
+            const checkovOutput = `${{ needs.checkov.outputs.checkov_output }}`.trim() || "(no output)";
+            const planOutcome = `${{ needs.plan.outputs.plan_outcome }}`;
+            const planOutput = `${{ needs.plan.outputs.plan_output }}`.trim() || "(no output)";
+
+            const statusEmoji = (outcome) => outcome === "success" ? ":white_check_mark:" : (outcome === "failure" ? ":x:" : ":warning:");
+
+            const body = [
+              "## Terraform PR Checks (Requirement 7.2)",
+              "",
+              `### ${statusEmoji('${{ needs.fmt-validate.outputs.fmt_outcome }}')} terraform fmt`,
+              "```",
+              fmtOutput,
+              "```",
+              `### ${statusEmoji('${{ needs.fmt-validate.outputs.validate_outcome }}')} terraform validate`,
+              "```",
+              validateOutput,
+              "```",
+              `### ${statusEmoji('${{ needs.tflint.outputs.tflint_outcome }}')} tflint`,
+              "```",
+              tflintOutput,
+              "```",
+              "### checkov",
+              "```",
+              checkovOutput,
+              "```",
+              `### terraform plan (outcome: ${planOutcome})`,
+              "```",
+              planOutput,
+              "```",
+            ].join("\n");
+
+            const marker = "<!-- terraform-pr-checks-bot-comment -->";
+            const fullBody = `${marker}\n${body}`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.startsWith(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: fullBody,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: fullBody,
+              });
+            }

@@ -1,0 +1,17 @@
+# Virtual environments — never committed.
+.venv/
+venv/
+
+# Python bytecode/cache.
+__pycache__/
+*.pyc
+
+# Tooling caches.
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+
+# Build artifacts.
+*.egg-info/
+dist/
+build/

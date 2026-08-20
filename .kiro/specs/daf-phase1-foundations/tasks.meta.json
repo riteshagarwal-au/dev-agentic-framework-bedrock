@@ -1,0 +1,707 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create repository directory structure and root tooling config": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683328
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197697651
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197785677
+      }
+    ],
+    "1.2 Set up Python backend package with dependency management and quality tooling": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683451
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197790820
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787198842673
+      }
+    ],
+    "1.3 Set up Terraform project structure and shared variable/backend conventions": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683510
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197791911
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787198840692
+      }
+    ],
+    "1.4 Set up React/TypeScript portal scaffold": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683553
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197793032
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787198839616
+      }
+    ],
+    "2.1 Write Terraform module for S3-native remote state backend": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683587
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197794110
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787198838896
+      }
+    ],
+    "2.2 Write Terraform module for GitHub OIDC federation IAM role": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683619
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787198848192
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787199722060
+      }
+    ],
+    "2.3 Write Terraform module for baseline VPC/networking": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683672
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787198849046
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787199722795
+      }
+    ],
+    "2.4 Write Terraform module for the HITL gate Step Functions state machine": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683703
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787198850148
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787199725921
+      }
+    ],
+    "3.1 Write Terraform module for Bedrock Guardrails configuration": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683735
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787198850874
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787199723818
+      }
+    ],
+    "3.2 Write Terraform module for Bedrock Knowledge Base on S3 + S3 Vectors backend": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683769
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787199731893
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204558850
+      }
+    ],
+    "3.3 Write Terraform module for AgentCore Memory configuration": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683800
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787199732955
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787201458630
+      }
+    ],
+    "3.4 Write Terraform module for per-agent least-privilege IAM roles": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683850
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787199734062
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787201459382
+      }
+    ],
+    "4.1 Implement Secrets Manager credential retrieval helper (Python)": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683886
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787198851678
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787199721018
+      }
+    ],
+    "4.2 Implement per-agent MCP tool allowlist configuration and enforcement helper": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683927
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787199734804
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787201457590
+      }
+    ],
+    "4.3 Write Terraform for Secrets Manager secret resources and access policies": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197683970
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204565354
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204960544
+      }
+    ],
+    "5.1 Define DynamoDB table schemas for RunState, RunCounters, GateTicket, and DeadLetterRecord (Terraform)": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684010
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787199735933
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787201457255
+      }
+    ],
+    "5.2 Implement Python repository layer for RunState persistence": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684049
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204967038
+      }
+    ],
+    "5.3 Implement Python repository layer for RunCounters persistence": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684082
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204967975
+      }
+    ],
+    "5.4 Implement Python repository layer for GateTicket persistence": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684127
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204969716
+      }
+    ],
+    "5.5 Implement Python repository layer for DeadLetterRecord persistence": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684166
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204969879
+      }
+    ],
+    "6.1 Implement Pydantic models for TaskEnvelope, ArtifactRef, SpokeResult, RunConfig, RunState, BudgetCeiling, RunCounters, GateTicket, and shared enums": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684202
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197795008
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787198841849
+      }
+    ],
+    "6.2 Implement SpokeAgent interface/base class and output-schema validation utility": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684237
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204970656
+      }
+    ],
+    "7.1 Implement task→model policy table and resolveModel routing logic": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684269
+      }
+    ],
+    "7.2 Implement recordOutcome and escalation logging": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684309
+      }
+    ],
+    "8.1 Implement preCheck threshold evaluation logic": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684341
+      }
+    ],
+    "8.2 Implement recordUsage with idempotency key handling": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684376
+      }
+    ],
+    "8.3 Implement checkOpusGate logic as a pure budget cap": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684411
+      }
+    ],
+    "8.4 Implement detectRepeatedNoProgress and circuit breaker trigger": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684444
+      }
+    ],
+    "8.5 Implement detectConsecutiveFailures and wire both circuit-breaker triggers into recordUsage": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684478
+      }
+    ],
+    "8.6 Implement global kill switch read/write": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684511
+      }
+    ],
+    "9.1 Implement raiseGate: start Step Functions execution and persist ticket": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684543
+      }
+    ],
+    "9.2 Implement decide: resume the held Step Functions execution with PENDING guard": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684578
+      }
+    ],
+    "9.3 Implement getPendingGates query": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684611
+      }
+    ],
+    "10.1 Implement pre-invocation stage": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684644
+      }
+    ],
+    "10.2 Implement invocation stage wiring to Bedrock Agents runtime": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684677
+      }
+    ],
+    "10.3 Implement post-invocation stage": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684734
+      }
+    ],
+    "10.4 Implement exponential-backoff retry with dead-letter persistence for transient errors": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684786
+      }
+    ],
+    "11. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684831
+      }
+    ],
+    "12.1 Implement Supervisor.startRun task-graph decomposition": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684866
+      }
+    ],
+    "12.2 Implement Supervisor.routeTask brokering through Router and hook pipeline": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684901
+      }
+    ],
+    "12.3 Implement Supervisor.getRunStatus and killRun": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684943
+      }
+    ],
+    "13.1 Implement Discovery Agent action group": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197684991
+      }
+    ],
+    "13.2 Implement DevOps Agent action group": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685042
+      }
+    ],
+    "13.3 Implement Security Agent action group": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685095
+      }
+    ],
+    "13.4 Implement Modernization Agent action group": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685157
+      }
+    ],
+    "13.5 Implement Portfolio Assessment Agent action group": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685203
+      }
+    ],
+    "13.6 Implement KB-vs-AWS-Docs conflict detection and flagging": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685244
+      }
+    ],
+    "13.7 Write Terraform for Bedrock Agent resources per agent": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685277
+      }
+    ],
+    "14.1 Implement PR-Reviewer Agent": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685312
+      }
+    ],
+    "14.2 Write GitHub Actions workflow for deterministic PR checks": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685348
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204566754
+      },
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204960960
+      }
+    ],
+    "14.3 Write Terraform for target ECS Fargate infrastructure": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685386
+      }
+    ],
+    "14.4 Write GitHub Actions workflow for terraform plan/apply gated by HITL": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685425
+      }
+    ],
+    "14.5 Write GitHub Actions workflow for container build/deploy to ECS Fargate": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685459
+      }
+    ],
+    "14.6 Implement scripted (non-LLM) smoke-test CI step and result reporting": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685494
+      }
+    ],
+    "14.7 Implement HITL-gated compensation action path": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685542
+      }
+    ],
+    "15. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685585
+      }
+    ],
+    "16.1 Implement OpenTelemetry instrumentation for Supervisor, hook pipeline, and core agents": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685635
+      }
+    ],
+    "16.2 Implement structured audit event writer with trace ID correlation": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685677
+      }
+    ],
+    "16.3 Implement per-agent metrics recording": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685718
+      }
+    ],
+    "17.1 Implement API Gateway + Lambda backend endpoints for portal (Python)": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685753
+      }
+    ],
+    "17.2 Implement Cognito-authenticated API client and route guards (TypeScript)": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685796
+      }
+    ],
+    "17.3 Implement run kickoff and live run-status monitoring views": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685852
+      }
+    ],
+    "17.4 Implement HITL approval ticket list and decision view": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685896
+      }
+    ],
+    "18.1 Implement integration test for full synthetic-app migration flow through all 7 HITL gates": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685928
+      }
+    ],
+    "18.2 Implement deliberate-trigger tests for kill switch, hard caps, and circuit breaker": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685963
+      }
+    ],
+    "18.3 Implement model-tier call-mix logging assertion against the 70/28/2 target": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197685995
+      }
+    ],
+    "19. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787197686036
+      }
+    ],
+    "1. Set up monorepo structure and shared tooling": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787198842706
+      }
+    ],
+    "2. Terraform bootstrap: remote state backend, OIDC federation, base networking": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787199726014
+      }
+    ],
+    "3. Bedrock enablement: Guardrails, Knowledge Base (S3 Vectors), AgentCore Memory": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204559011
+      }
+    ],
+    "4. MCP connector wiring, secrets management, and tool allowlists": [
+      {
+        "executionId": "0f91bf6e-1f32-418d-80a7-42e20a041624",
+        "chatSessionId": "sess_f995644c-6d95-44b8-8d13-6ae770064e4e",
+        "timestamp": 1787204960636
+      }
+    ]
+  }
+}
