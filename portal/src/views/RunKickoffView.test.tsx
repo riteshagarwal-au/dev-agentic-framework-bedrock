@@ -19,10 +19,11 @@ describe('RunKickoffView', () => {
     render(<RunKickoffView apiClient={apiClient} />)
 
     fireEvent.change(screen.getByLabelText(/target app/i), { target: { value: 'my-synthetic-app' } })
+    fireEvent.change(screen.getByLabelText(/target repo/i), { target: { value: 'my-org/my-app-repo' } })
     fireEvent.click(screen.getByRole('button', { name: /start run/i }))
 
     expect(apiClient.startRun).toHaveBeenCalledWith(
-      expect.objectContaining({ targetApp: 'my-synthetic-app' }),
+      expect.objectContaining({ targetApp: 'my-synthetic-app', targetRepo: 'my-org/my-app-repo' }),
     )
     expect(await screen.findByText(/run-abc/)).toBeInTheDocument()
   })
@@ -32,6 +33,7 @@ describe('RunKickoffView', () => {
     render(<RunKickoffView apiClient={apiClient} />)
 
     fireEvent.change(screen.getByLabelText(/target app/i), { target: { value: 'my-app' } })
+    fireEvent.change(screen.getByLabelText(/target repo/i), { target: { value: 'my-org/my-app-repo' } })
     fireEvent.click(screen.getByRole('button', { name: /start run/i }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('boom')

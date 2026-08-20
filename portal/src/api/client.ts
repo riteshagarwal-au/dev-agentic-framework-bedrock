@@ -15,6 +15,7 @@ export interface StartRunPayload {
   targetApp: string
   sourceEnv: { subscriptionId: string; resourceGroup: string; resourceName: string }
   targetPlatform: string
+  targetRepo: string
   budgetCeiling: {
     maxTotalTokens: number
     maxCostUsd: number
@@ -80,6 +81,16 @@ export class ApiClient {
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     })
 
-    return response.json()
+    const parsed: unknown = await response.json().catch(() => undefined)
+
+    if (!response.ok) {
+      const message =
+        parsed && typeof parsed === 'object' && 'message' in parsed && typeof (parsed as { message: unknown }).message === 'string'
+          ? (parsed as { message: string }).message
+          : `Request failed with status ${response.status}`
+      throw new Error(message)
+    }
+
+    return parsed
   }
 }

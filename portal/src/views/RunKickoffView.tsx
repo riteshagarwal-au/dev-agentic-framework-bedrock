@@ -15,6 +15,7 @@ function isStartRunResponse(value: unknown): value is StartRunResponse {
 
 export function RunKickoffView({ apiClient }: RunKickoffViewProps) {
   const [targetApp, setTargetApp] = useState('')
+  const [targetRepo, setTargetRepo] = useState('')
   const [runId, setRunId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -29,18 +30,25 @@ export function RunKickoffView({ apiClient }: RunKickoffViewProps) {
       const response = await apiClient.startRun({
         runId: generatedRunId,
         targetApp,
-        sourceEnv: { subscriptionId: '', resourceGroup: '', resourceName: '' },
+        sourceEnv: {
+          subscriptionId: `synthetic-${targetApp}`,
+          resourceGroup: `rg-${targetApp}`,
+          resourceName: targetApp,
+        },
         targetPlatform: 'ECS_FARGATE',
+        targetRepo,
         budgetCeiling: {
-          maxTotalTokens: 0,
-          maxCostUsd: 0,
-          maxWallClockMs: 0,
-          maxSteps: 0,
-          maxOpusInvocations: 0,
+          maxTotalTokens: 1_000_000,
+          maxCostUsd: 50.0,
+          maxWallClockMs: 3_600_000,
+          maxSteps: 20,
+          maxOpusInvocations: 3,
         },
       })
-      const resolvedRunId = isStartRunResponse(response) && response.runId ? response.runId : generatedRunId
-      setRunId(resolvedRunId)
+      if (!isStartRunResponse(response) || !response.runId) {
+        throw new Error('Start run response did not include a runId')
+      }
+      setRunId(response.runId)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start run')
     } finally {
@@ -58,6 +66,15 @@ export function RunKickoffView({ apiClient }: RunKickoffViewProps) {
           type="text"
           value={targetApp}
           onChange={(event) => setTargetApp(event.target.value)}
+          required
+        />
+        <label htmlFor="targetRepo">Target repo (org/repo)</label>
+        <input
+          id="targetRepo"
+          type="text"
+          value={targetRepo}
+          onChange={(event) => setTargetRepo(event.target.value)}
+          placeholder="my-org/my-app-repo"
           required
         />
         <button type="submit" disabled={submitting}>

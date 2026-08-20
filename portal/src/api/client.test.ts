@@ -3,8 +3,8 @@ import { ApiClient, UnauthenticatedError } from './client'
 
 const BASE_URL = 'https://api.example.test'
 
-function jsonResponse(body: unknown) {
-  return { json: () => Promise.resolve(body) } as Response
+function jsonResponse(body: unknown, ok = true, status = 200) {
+  return { ok, status, json: () => Promise.resolve(body) } as Response
 }
 
 describe('ApiClient', () => {
@@ -23,6 +23,7 @@ describe('ApiClient', () => {
           targetApp: 'app-1',
           sourceEnv: { subscriptionId: 'sub', resourceGroup: 'rg', resourceName: 'app-1-rg' },
           targetPlatform: 'ECS_FARGATE',
+          targetRepo: 'my-org/my-app-repo',
           budgetCeiling: {
             maxTotalTokens: 1,
             maxCostUsd: 1,
@@ -67,6 +68,7 @@ describe('ApiClient', () => {
         targetApp: 'app-1',
         sourceEnv: { subscriptionId: 'sub', resourceGroup: 'rg', resourceName: 'app-1-rg' },
         targetPlatform: 'ECS_FARGATE',
+        targetRepo: 'my-org/my-app-repo',
         budgetCeiling: {
           maxTotalTokens: 1,
           maxCostUsd: 1,
