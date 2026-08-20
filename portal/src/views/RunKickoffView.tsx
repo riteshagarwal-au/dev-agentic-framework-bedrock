@@ -3,6 +3,7 @@ import type { ApiClient } from '../api/client'
 
 export interface RunKickoffViewProps {
   apiClient: ApiClient
+  onRunStarted?: (runId: string) => void
 }
 
 interface StartRunResponse {
@@ -13,7 +14,7 @@ function isStartRunResponse(value: unknown): value is StartRunResponse {
   return typeof value === 'object' && value !== null
 }
 
-export function RunKickoffView({ apiClient }: RunKickoffViewProps) {
+export function RunKickoffView({ apiClient, onRunStarted }: RunKickoffViewProps) {
   const [targetApp, setTargetApp] = useState('')
   const [targetRepo, setTargetRepo] = useState('')
   const [runId, setRunId] = useState<string | null>(null)
@@ -49,6 +50,7 @@ export function RunKickoffView({ apiClient }: RunKickoffViewProps) {
         throw new Error('Start run response did not include a runId')
       }
       setRunId(response.runId)
+      onRunStarted?.(response.runId)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start run')
     } finally {

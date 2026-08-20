@@ -143,6 +143,14 @@ class Supervisor:
             raise RunNotFoundError(run_id)
         return run_state.status
 
+    def get_run_state(self, run_id: RunId) -> RunState:
+        """Full RunState (task graph + progress), for portal status displays that need more
+        than the bare status enum `get_run_status` returns."""
+        run_state = self._run_state_repo.get(run_id)
+        if run_state is None:
+            raise RunNotFoundError(run_id)
+        return run_state
+
     def kill_run(self, run_id: RunId, reason: str) -> None:
         """Stop further routing: activate the kill switch (so any
         in-flight/subsequent `preCheck` halts) and move the run to

@@ -87,7 +87,18 @@ def get_run_status_handler(event: dict, context: Any, supervisor: Supervisor | N
     supervisor = supervisor if supervisor is not None else _build_default_supervisor()
     run_id = RunId(event.get("pathParameters", {})["runId"])
     status = supervisor.get_run_status(run_id)
-    return _response(200, {"runId": run_id, "status": status.value})
+    body = {"runId": run_id, "status": status.value}
+
+    get_run_state = getattr(supervisor, "get_run_state", None)
+    if get_run_state is not None:
+        run_state = get_run_state(run_id)
+        body["currentStepIndex"] = run_state.current_step_index
+        body["taskGraph"] = [
+            {"taskId": n.task_id, "taskType": n.task_type, "agentId": n.agent_id, "completed": n.completed}
+            for n in run_state.task_graph
+        ]
+
+    return _response(200, body)
 
 
 def list_pending_gates_handler(

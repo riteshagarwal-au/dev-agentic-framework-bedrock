@@ -70,3 +70,39 @@
 .daf-portal-app button[type='submit']:hover {
   opacity: 0.9;
 }
+
+.task-graph-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-graph-list li {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+}
+
+.task-graph-list li[data-state='done'] {
+  border-color: #2e7d32;
+  color: #2e7d32;
+}
+
+.task-graph-list li[data-state='in-progress'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.hitl-banner {
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: #fff3cd;
+  color: #664d03;
+  margin-bottom: 16px;
+}
+

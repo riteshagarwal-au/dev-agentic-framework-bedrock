@@ -56,6 +56,30 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_s3_bucket" "artifacts" {
+  bucket = "${var.name_prefix}-portal-api-artifacts-${var.environment}-${data.aws_caller_identity.current.account_id}"
+  tags   = { Environment = var.environment }
+}
+
+resource "aws_s3_bucket_public_access_block" "artifacts" {
+  bucket                  = aws_s3_bucket.artifacts.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "artifacts" {
+  bucket = aws_s3_bucket.artifacts.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+data "aws_caller_identity" "current" {}
+
 data "aws_iam_policy_document" "lambda_dynamodb_stepfunctions" {
   statement {
     sid    = "RunStateAndCountersAndGateTicketAccess"
@@ -93,6 +117,20 @@ data "aws_iam_policy_document" "lambda_dynamodb_stepfunctions" {
     effect    = "Allow"
     actions   = ["kms:Decrypt", "kms:Encrypt", "kms:GenerateDataKey", "kms:DescribeKey"]
     resources = [var.dynamodb_kms_key_arn]
+  }
+
+  statement {
+    sid       = "ArtifactBucketReadWrite"
+    effect    = "Allow"
+    actions   = ["s3:PutObject", "s3:GetObject"]
+    resources = ["${aws_s3_bucket.artifacts.arn}/*"]
+  }
+
+  statement {
+    sid       = "StsGetCallerIdentity"
+    effect    = "Allow"
+    actions   = ["sts:GetCallerIdentity"]
+    resources = ["*"]
   }
 }
 
@@ -151,6 +189,7 @@ resource "aws_lambda_function" "run_worker" {
       RUN_COUNTERS_TABLE_NAME = var.run_counters_table_name
       GATE_TICKET_TABLE_NAME  = var.gate_ticket_table_name
       HITL_STATE_MACHINE_ARN  = var.hitl_state_machine_arn
+      ARTIFACT_BUCKET_NAME    = aws_s3_bucket.artifacts.bucket
     }
   }
 

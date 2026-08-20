@@ -12,6 +12,11 @@ output "portal_api_endpoint" {
   value       = module.portal_api.api_endpoint
 }
 
+output "artifact_bucket_name" {
+  description = "S3 bucket holding real generated migration artifacts (inventory, blueprint, Terraform plan)."
+  value       = module.portal_api.artifact_bucket_name
+}
+
 output "cognito_user_pool_domain" {
   description = "Cognito Hosted UI domain for the Portal user pool."
   value       = module.cognito_auth.user_pool_domain

@@ -33,7 +33,15 @@ export function DafPortalApp({ apiClient }: DafPortalAppProps) {
       <label htmlFor="runIdInput">Run ID</label>
       <input id="runIdInput" type="text" value={runId} onChange={(event) => setRunId(event.target.value)} />
 
-      {tab === 'kickoff' && <RunKickoffView apiClient={apiClient} />}
+      {tab === 'kickoff' && (
+        <RunKickoffView
+          apiClient={apiClient}
+          onRunStarted={(startedRunId) => {
+            setRunId(startedRunId)
+            setTab('status')
+          }}
+        />
+      )}
       {tab === 'status' && runId && <RunStatusView apiClient={apiClient} runId={runId} />}
       {tab === 'approval' && runId && <HitlApprovalView apiClient={apiClient} runId={runId} />}
     </div>

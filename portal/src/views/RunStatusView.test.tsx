@@ -38,4 +38,27 @@ describe('RunStatusView', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/awaiting human approval/i)
   })
+
+  it('renders the task graph with per-step progress', async () => {
+    const apiClient = {
+      startRun: vi.fn(),
+      getRunStatus: vi.fn().mockResolvedValue({
+        runId: 'run-1',
+        status: 'RUNNING',
+        currentStepIndex: 1,
+        taskGraph: [
+          { taskId: 'run-1-0', taskType: 'DISCOVERY_COLLECT', agentId: 'DISCOVERY', completed: true },
+          { taskId: 'run-1-1', taskType: 'DISCOVERY_REASON', agentId: 'DISCOVERY', completed: false },
+        ],
+      }),
+      listPendingGates: vi.fn(),
+      decideGate: vi.fn(),
+    } as unknown as ApiClient
+
+    render(<RunStatusView apiClient={apiClient} runId="run-1" />)
+
+    expect(await screen.findByText(/DISCOVERY_COLLECT/)).toBeInTheDocument()
+    expect(screen.getByText(/DISCOVERY_REASON/)).toBeInTheDocument()
+    expect(screen.getAllByRole('listitem')).toHaveLength(2)
+  })
 })

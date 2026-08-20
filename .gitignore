@@ -28,3 +28,4 @@ crash.log
 override.tf
 override.tf.json
 .build/
+infra/tfplan.out

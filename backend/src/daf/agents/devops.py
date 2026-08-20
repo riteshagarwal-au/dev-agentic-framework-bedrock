@@ -37,6 +37,11 @@ class AwsApiCliClientProtocol(Protocol):
     def validate_credentials(self) -> bool: ...
 
 
+class ArtifactWriterProtocol(Protocol):
+    def write(self, trace_id: str, filename: str, content: str, kind: ArtifactKind, artifact_id: str) -> ArtifactRef: ...
+    def read_text(self, location: str) -> str: ...
+
+
 class DevOpsAgent:
     """Implements the `SpokeAgentProtocol` shape (duck-typed, per
     `daf.pipeline.pipeline.SpokeAgentProtocol`).
@@ -51,17 +56,19 @@ class DevOpsAgent:
         terraform_mcp_client: TerraformMcpClientProtocol,
         github_mcp_client: GithubMcpClientProtocol,
         aws_api_cli_client: AwsApiCliClientProtocol,
+        artifact_writer: ArtifactWriterProtocol | None = None,
     ) -> None:
         self._terraform_mcp_client = terraform_mcp_client
         self._github_mcp_client = github_mcp_client
         self._aws_api_cli_client = aws_api_cli_client
+        self._artifact_writer = artifact_writer
 
     def execute(self, envelope: TaskEnvelope, tier: Any) -> SpokeResult:  # noqa: ARG002 - tier resolved by Router upstream
         blueprint_ref = envelope.inputs.get("blueprint")
         blueprint_location = blueprint_ref.location if blueprint_ref is not None else "unknown-blueprint"
 
         enforce_tool_allowlist(AgentRole.DEVOPS, McpTool.TERRAFORM)
-        self._terraform_mcp_client.generate_plan(blueprint_location)
+        tf_plan = self._terraform_mcp_client.generate_plan(blueprint_location)
 
         enforce_tool_allowlist(AgentRole.DEVOPS, McpTool.AWS_API_CLI)
         self._aws_api_cli_client.validate_credentials()
@@ -73,15 +80,26 @@ class DevOpsAgent:
             branch=f"daf/{envelope.trace_id}",
         )
 
-        return SpokeResult(
-            output=ArtifactRef(
+        if self._artifact_writer is not None:
+            output = self._artifact_writer.write(
+                trace_id=str(envelope.trace_id),
+                filename="tf-plan.tf",
+                content=tf_plan or "# no Terraform plan generated",
+                kind=ArtifactKind.TF_PLAN,
+                artifact_id=f"tf-plan-{envelope.trace_id}",
+            )
+        else:
+            output = ArtifactRef(
                 artifactId=f"tf-plan-{envelope.trace_id}",
                 location=f"s3://daf-artifacts/{envelope.trace_id}/tf-plan.json",
                 locationKind=ArtifactLocationKind.S3_URI,
                 kind=ArtifactKind.TF_PLAN,
-            ),
+            )
+
+        return SpokeResult(
+            output=output,
             confidence=0.9,
             tokensUsed=TokenUsage(tokensIn=0, tokensOut=0),
             status=SpokeResultStatus.SUCCESS,
-            notes=f"Opened PR: {pr_url}",
+            notes=f"Generated Terraform plan; PR status: {pr_url or 'not created (GITHUB_TOKEN not configured)'}",
         )

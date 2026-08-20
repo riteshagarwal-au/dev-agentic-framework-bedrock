@@ -7,10 +7,19 @@ export interface RunStatusViewProps {
   pollIntervalMs?: number
 }
 
+interface TaskGraphNode {
+  taskId?: string
+  taskType?: string
+  agentId?: string
+  completed?: boolean
+}
+
 interface RunStatusResponse {
   runId?: string
   status?: string
   currentStep?: string
+  currentStepIndex?: number
+  taskGraph?: TaskGraphNode[]
 }
 
 function isRunStatusResponse(value: unknown): value is RunStatusResponse {
@@ -20,6 +29,8 @@ function isRunStatusResponse(value: unknown): value is RunStatusResponse {
 export function RunStatusView({ apiClient, runId, pollIntervalMs = 4000 }: RunStatusViewProps) {
   const [status, setStatus] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState<string | null>(null)
+  const [currentStepIndex, setCurrentStepIndex] = useState<number | null>(null)
+  const [taskGraph, setTaskGraph] = useState<TaskGraphNode[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -32,6 +43,8 @@ export function RunStatusView({ apiClient, runId, pollIntervalMs = 4000 }: RunSt
         if (isRunStatusResponse(response)) {
           setStatus(response.status ?? null)
           setCurrentStep(response.currentStep ?? null)
+          setCurrentStepIndex(response.currentStepIndex ?? null)
+          setTaskGraph(response.taskGraph ?? [])
         }
         setError(null)
       } catch (err) {
@@ -50,6 +63,7 @@ export function RunStatusView({ apiClient, runId, pollIntervalMs = 4000 }: RunSt
   }, [apiClient, runId, pollIntervalMs])
 
   const isAwaitingHitl = status === 'AWAITING_HITL'
+  const isTerminal = status === 'COMPLETED' || status === 'FAILED' || status === 'HALTED'
 
   return (
     <div className="run-status-view">
@@ -61,6 +75,20 @@ export function RunStatusView({ apiClient, runId, pollIntervalMs = 4000 }: RunSt
       )}
       {status && <p>Status: {status}</p>}
       {currentStep && <p>Current step: {currentStep}</p>}
+      {taskGraph.length > 0 && (
+        <ol className="task-graph-list">
+          {taskGraph.map((node, index) => {
+            const isCurrent = !isTerminal && currentStepIndex === index
+            const label = node.completed ? 'Done' : isCurrent ? 'In progress' : 'Pending'
+            return (
+              <li key={node.taskId ?? index} data-state={label.toLowerCase().replace(' ', '-')}>
+                <strong>{node.taskType ?? `Step ${index + 1}`}</strong>
+                {node.agentId && <span> ({node.agentId})</span>} — {label}
+              </li>
+            )
+          })}
+        </ol>
+      )}
       {error && <p role="alert">{error}</p>}
     </div>
   )
