@@ -1,0 +1,72 @@
+.daf-portal-app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.daf-portal-app nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.daf-portal-app nav button {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.daf-portal-app nav button:hover {
+  border-color: var(--accent-border);
+  color: var(--text-h);
+}
+
+.daf-portal-app label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.daf-portal-app input[type='text'] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  margin-bottom: 20px;
+}
+
+.daf-portal-app input[type='text']:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.daf-portal-app h1,
+.daf-portal-app h2 {
+  color: var(--text-h);
+}
+
+.daf-portal-app button[type='submit'] {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.daf-portal-app button[type='submit']:hover {
+  opacity: 0.9;
+}

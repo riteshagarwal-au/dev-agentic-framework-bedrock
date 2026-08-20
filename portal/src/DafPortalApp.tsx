@@ -3,6 +3,7 @@ import type { ApiClient } from './api/client'
 import { HitlApprovalView } from './views/HitlApprovalView'
 import { RunKickoffView } from './views/RunKickoffView'
 import { RunStatusView } from './views/RunStatusView'
+import './DafPortalApp.css'
 
 export interface DafPortalAppProps {
   apiClient: ApiClient
@@ -17,6 +18,7 @@ export function DafPortalApp({ apiClient }: DafPortalAppProps) {
 
   return (
     <div className="daf-portal-app">
+      <h1>DAF Portal</h1>
       <nav>
         <button type="button" onClick={() => setTab('kickoff')}>
           Kickoff

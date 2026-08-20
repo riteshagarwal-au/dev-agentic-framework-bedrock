@@ -16,6 +16,8 @@ __pycache__/
 node_modules/
 dist/
 coverage/
+.env*
+!.env.example
 
 # Terraform (infra/)
 .terraform/
@@ -25,3 +27,4 @@ coverage/
 crash.log
 override.tf
 override.tf.json
+.build/
