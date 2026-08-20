@@ -53,6 +53,11 @@ variable "hitl_state_machine_arn" {
   type        = string
 }
 
+variable "dynamodb_kms_key_arn" {
+  description = "ARN of the KMS key encrypting the RunState/RunCounters/GateTicket DynamoDB tables — the Lambda role needs kms:Decrypt/Encrypt/GenerateDataKey on it to read/write those tables."
+  type        = string
+}
+
 variable "cognito_user_pool_client_id" {
   type = string
 }
@@ -74,4 +79,10 @@ variable "lambda_timeout_seconds" {
 variable "lambda_memory_mb" {
   type    = number
   default = 256
+}
+
+variable "run_worker_timeout_seconds" {
+  description = "Timeout for the run-worker Lambda, which loops calling Supervisor.route_task until the run reaches a terminal state or a HITL gate blocks it — longer than the simple portal API route Lambdas."
+  type        = number
+  default     = 60
 }

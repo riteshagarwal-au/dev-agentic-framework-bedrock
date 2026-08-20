@@ -8,22 +8,35 @@ pattern.
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
+from daf.models.run import RunConfig
 from daf.portal_api.handlers import (
     decide_gate_handler,
     get_run_status_handler,
     list_pending_gates_handler,
     start_run_handler,
 )
-from daf.portal_api.wiring import build_hitl_broker, build_supervisor
+from daf.portal_api.wiring import (
+    build_hitl_broker,
+    build_supervisor,
+    get_run_id_for_ticket,
+    persist_budget_ceiling,
+    trigger_run_worker,
+)
 
 _supervisor = build_supervisor()
 _hitl_broker = build_hitl_broker()
 
 
 def start_run(event: dict, context: Any) -> dict:
-    return start_run_handler(event, context, supervisor=_supervisor)
+    response = start_run_handler(event, context, supervisor=_supervisor)
+    if response["statusCode"] == 200:
+        run_config = RunConfig.model_validate(json.loads(event.get("body") or "{}"))
+        persist_budget_ceiling(run_config.run_id, run_config.budget_ceiling)
+        trigger_run_worker(run_config.run_id)
+    return response
 
 
 def get_run_status(event: dict, context: Any) -> dict:
@@ -35,4 +48,10 @@ def list_pending_gates(event: dict, context: Any) -> dict:
 
 
 def decide_gate(event: dict, context: Any) -> dict:
-    return decide_gate_handler(event, context, hitl_broker=_hitl_broker)
+    response = decide_gate_handler(event, context, hitl_broker=_hitl_broker)
+    if response["statusCode"] == 200:
+        ticket_id = json.loads(event.get("body") or "{}").get("ticketId")
+        run_id = get_run_id_for_ticket(ticket_id) if ticket_id else None
+        if run_id:
+            trigger_run_worker(run_id)
+    return response

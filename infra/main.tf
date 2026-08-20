@@ -102,6 +102,7 @@ module "portal_api" {
   gate_ticket_table_name      = module.dynamodb_tables.gate_ticket_table_name
   gate_ticket_table_arn       = module.dynamodb_tables.gate_ticket_table_arn
   hitl_state_machine_arn      = module.hitl_gate_state_machine.state_machine_arn
+  dynamodb_kms_key_arn        = module.dynamodb_tables.kms_key_arn
   cognito_user_pool_client_id = module.cognito_auth.user_pool_client_id
   cognito_issuer_url          = module.cognito_auth.issuer_url
   cors_allowed_origins        = [module.portal_hosting.portal_url]

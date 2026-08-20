@@ -80,6 +80,20 @@ data "aws_iam_policy_document" "lambda_dynamodb_stepfunctions" {
     actions   = ["states:SendTaskSuccess", "states:SendTaskFailure"]
     resources = [var.hitl_state_machine_arn]
   }
+
+  statement {
+    sid       = "InvokeRunWorker"
+    effect    = "Allow"
+    actions   = ["lambda:InvokeFunction"]
+    resources = [aws_lambda_function.run_worker.arn]
+  }
+
+  statement {
+    sid       = "DynamoDbTableEncryptionKeyAccess"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt", "kms:Encrypt", "kms:GenerateDataKey", "kms:DescribeKey"]
+    resources = [var.dynamodb_kms_key_arn]
+  }
 }
 
 resource "aws_iam_role_policy" "lambda_dynamodb_stepfunctions" {
@@ -94,6 +108,7 @@ locals {
     RUN_COUNTERS_TABLE_NAME = var.run_counters_table_name
     GATE_TICKET_TABLE_NAME  = var.gate_ticket_table_name
     HITL_STATE_MACHINE_ARN  = var.hitl_state_machine_arn
+    WORKER_FUNCTION_NAME    = aws_lambda_function.run_worker.function_name
   }
 
   routes = {
@@ -118,6 +133,28 @@ locals {
       path    = "/gates/{ticketId}/decide"
     }
   }
+}
+
+resource "aws_lambda_function" "run_worker" {
+  function_name    = "${var.name_prefix}-portal-api-run-worker-${var.environment}"
+  role             = aws_iam_role.lambda_exec.arn
+  handler          = "daf.portal_api.orchestrator.run_worker_handler"
+  runtime          = "python3.12"
+  timeout          = var.run_worker_timeout_seconds
+  memory_size      = var.lambda_memory_mb
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  environment {
+    variables = {
+      RUN_STATE_TABLE_NAME    = var.run_state_table_name
+      RUN_COUNTERS_TABLE_NAME = var.run_counters_table_name
+      GATE_TICKET_TABLE_NAME  = var.gate_ticket_table_name
+      HITL_STATE_MACHINE_ARN  = var.hitl_state_machine_arn
+    }
+  }
+
+  tags = { Environment = var.environment }
 }
 
 resource "aws_lambda_function" "route" {
