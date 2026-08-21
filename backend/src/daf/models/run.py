@@ -8,7 +8,7 @@ from datetime import datetime
 from pydantic import ConfigDict, Field, field_validator
 
 from daf.models.budget import BudgetCeiling, RunCounters
-from daf.models.common import AzureSourceRef, DafBaseModel, TaskNode
+from daf.models.common import ArtifactRef, AzureSourceRef, DafBaseModel, TaskNode
 from daf.models.enums import RunStatus, TargetPlatform
 from daf.models.types import RunId, TraceId
 
@@ -76,5 +76,9 @@ class RunState(DafBaseModel):
     counters: RunCounters
     created_at: datetime = Field(alias="createdAt")
     updated_at: datetime = Field(alias="updatedAt")
+    # Keyed by TaskType value — lets the Supervisor pass a completed step's real
+    # ArtifactRef output into a later step's TaskEnvelope.inputs (e.g. Discovery's
+    # inventory feeding Modernization) instead of every step always getting inputs={}.
+    task_outputs: dict[str, ArtifactRef] = Field(default_factory=dict, alias="taskOutputs")
 
     model_config = ConfigDict(extra="forbid", validate_assignment=True, populate_by_name=True)

@@ -14,12 +14,19 @@ interface TaskGraphNode {
   completed?: boolean
 }
 
+interface ArtifactLink {
+  taskType?: string
+  filename?: string
+  downloadUrl?: string
+}
+
 interface RunStatusResponse {
   runId?: string
   status?: string
   currentStep?: string
   currentStepIndex?: number
   taskGraph?: TaskGraphNode[]
+  artifacts?: ArtifactLink[]
 }
 
 function isRunStatusResponse(value: unknown): value is RunStatusResponse {
@@ -31,6 +38,7 @@ export function RunStatusView({ apiClient, runId, pollIntervalMs = 4000 }: RunSt
   const [currentStep, setCurrentStep] = useState<string | null>(null)
   const [currentStepIndex, setCurrentStepIndex] = useState<number | null>(null)
   const [taskGraph, setTaskGraph] = useState<TaskGraphNode[]>([])
+  const [artifacts, setArtifacts] = useState<ArtifactLink[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -45,6 +53,7 @@ export function RunStatusView({ apiClient, runId, pollIntervalMs = 4000 }: RunSt
           setCurrentStep(response.currentStep ?? null)
           setCurrentStepIndex(response.currentStepIndex ?? null)
           setTaskGraph(response.taskGraph ?? [])
+          setArtifacts(response.artifacts ?? [])
         }
         setError(null)
       } catch (err) {
@@ -90,6 +99,21 @@ export function RunStatusView({ apiClient, runId, pollIntervalMs = 4000 }: RunSt
         </ol>
       )}
       {error && <p role="alert">{error}</p>}
+      {artifacts.length > 0 && (
+        <div className="run-artifacts">
+          <h3>Generated artifacts</h3>
+          <ul>
+            {artifacts.map((artifact, index) => (
+              <li key={`${artifact.taskType ?? index}`}>
+                <a href={artifact.downloadUrl} target="_blank" rel="noreferrer">
+                  {artifact.filename ?? artifact.taskType ?? `artifact-${index}`}
+                </a>
+                {artifact.taskType && <span> ({artifact.taskType})</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

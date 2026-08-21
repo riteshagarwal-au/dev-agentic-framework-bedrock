@@ -30,3 +30,12 @@ This workspace uses the same spec-driven flow as Kiro IDE, stored under
 
 Task files use checkboxes (`[ ]` not started, `[x]` done, `[-]`/`[~]` in progress)
 and cite the requirement numbers they satisfy (`_Requirements: X.Y_`).
+
+## Terminal output — hard rule
+
+NEVER pipe any terminal command through `tail`, `head`, or `grep` just to view it,
+and never redirect output to a file just to read it back. Let full command output
+stream inline so it can be watched live. If output is genuinely huge, use the
+command's own flags (`--max-items`, `-o table`, `--since`, `--no-headers`, etc.)
+instead of piping through `tail`. This applies to every terminal command in this
+workspace, no exceptions.

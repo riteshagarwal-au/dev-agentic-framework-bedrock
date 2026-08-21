@@ -147,6 +147,7 @@ locals {
     GATE_TICKET_TABLE_NAME  = var.gate_ticket_table_name
     HITL_STATE_MACHINE_ARN  = var.hitl_state_machine_arn
     WORKER_FUNCTION_NAME    = aws_lambda_function.run_worker.function_name
+    ARTIFACT_BUCKET_NAME    = aws_s3_bucket.artifacts.bucket
   }
 
   routes = {

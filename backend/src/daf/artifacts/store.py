@@ -47,3 +47,12 @@ class S3ArtifactStore:
         bucket, _, key = rest.partition("/")
         obj = self._s3.get_object(Bucket=bucket, Key=key)
         return obj["Body"].read().decode("utf-8")
+
+    def presign_url(self, location: str, expires_in: int = 900) -> str:
+        """Real, time-limited, downloadable HTTPS URL for an `s3://bucket/key` location
+        so the portal UI can link directly to a run's actual generated artifact bytes."""
+        _, _, rest = location.partition("s3://")
+        bucket, _, key = rest.partition("/")
+        return self._s3.generate_presigned_url(
+            "get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=expires_in
+        )

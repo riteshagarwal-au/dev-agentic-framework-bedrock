@@ -20,7 +20,7 @@ from pydantic import ConfigDict, Field
 from daf.budget.hook import CostBudgetHook
 from daf.models.budget import RunCounters
 from daf.models.common import DafBaseModel
-from daf.models.enums import RunStatus, SpokeResultStatus
+from daf.models.enums import RunStatus, SpokeResultStatus, TaskType
 from daf.models.envelope import SpokeResult, TaskEnvelope
 from daf.models.run import RunConfig, RunState
 from daf.models.types import RunId, TraceId
@@ -29,6 +29,14 @@ from daf.supervisor.exceptions import RunNotFoundError, TerminalRunStateError
 from daf.supervisor.task_graph import build_task_graph
 
 _TERMINAL_STATUSES = frozenset({RunStatus.HALTED, RunStatus.COMPLETED, RunStatus.FAILED})
+
+#: Which prior step's real ArtifactRef output feeds which later step's
+#: TaskEnvelope.inputs key — this is what makes e.g. Modernization see
+#: Discovery's actual inventory instead of every step getting inputs={}.
+_DOWNSTREAM_INPUTS: dict[str, dict[str, str]] = {
+    TaskType.MODERNIZATION_PLAN.value: {"inventory": TaskType.DISCOVERY_COLLECT.value},
+    TaskType.DEVOPS_EXEC.value: {"blueprint": TaskType.MODERNIZATION_PLAN.value},
+}
 
 
 class RunHandle(DafBaseModel):
@@ -117,7 +125,12 @@ class Supervisor:
         # Discovery) handles multiple TaskType values, each needing its
         # own router policy entry/tier (agent.task_type feeds resolve_model).
         agent = self._agent_registry[node.task_type]
-        envelope = TaskEnvelope(task=node.task_type, inputs={}, traceId=run_state.trace_id)
+        inputs = {
+            input_key: run_state.task_outputs[upstream_task_type]
+            for input_key, upstream_task_type in _DOWNSTREAM_INPUTS.get(node.task_type, {}).items()
+            if upstream_task_type in run_state.task_outputs
+        }
+        envelope = TaskEnvelope(task=node.task_type, inputs=inputs, traceId=run_state.trace_id)
 
         result = self._hook_pipeline.invoke_spoke(agent, envelope, run_id)
 
@@ -128,6 +141,7 @@ class Supervisor:
             return result
 
         node.completed = True
+        run_state.task_outputs[node.task_type] = result.output
         run_state.current_step_index += 1
         run_state.updated_at = datetime.now(UTC)
         self._run_state_repo.save(run_state)

@@ -15,8 +15,10 @@ unauthenticated request reach a run-control action (Requirement 12.4).
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 
+from daf.artifacts.store import S3ArtifactStore
 from daf.hitl.broker import HitlApprovalBroker
 from daf.models.enums import GateTicketStatus
 from daf.models.run import RunConfig
@@ -67,6 +69,13 @@ def _build_default_hitl_broker() -> HitlApprovalBroker:
     )
 
 
+def _build_default_artifact_store() -> Any | None:
+    """Real S3ArtifactStore for presigning download links, or None if
+    ARTIFACT_BUCKET_NAME isn't configured (e.g. in unit tests)."""
+    bucket = os.environ.get("ARTIFACT_BUCKET_NAME")
+    return S3ArtifactStore(bucket) if bucket else None
+
+
 def start_run_handler(event: dict, context: Any, supervisor: Supervisor | None = None) -> dict:
     claims = _require_authenticated_claims(event)
     if claims is None:
@@ -79,7 +88,12 @@ def start_run_handler(event: dict, context: Any, supervisor: Supervisor | None =
     return _response(200, run_handle.model_dump(by_alias=True, mode="json"))
 
 
-def get_run_status_handler(event: dict, context: Any, supervisor: Supervisor | None = None) -> dict:
+def get_run_status_handler(
+    event: dict,
+    context: Any,
+    supervisor: Supervisor | None = None,
+    artifact_store: Any | None = None,
+) -> dict:
     claims = _require_authenticated_claims(event)
     if claims is None:
         return _unauthorized_response()
@@ -97,6 +111,19 @@ def get_run_status_handler(event: dict, context: Any, supervisor: Supervisor | N
             {"taskId": n.task_id, "taskType": n.task_type, "agentId": n.agent_id, "completed": n.completed}
             for n in run_state.task_graph
         ]
+
+        artifact_store = artifact_store if artifact_store is not None else _build_default_artifact_store()
+        presign_url = getattr(artifact_store, "presign_url", None)
+        if presign_url is not None and run_state.task_outputs:
+            body["artifacts"] = [
+                {
+                    "taskType": task_type,
+                    "filename": ref.location.rsplit("/", 1)[-1],
+                    "downloadUrl": presign_url(ref.location),
+                }
+                for task_type, ref in run_state.task_outputs.items()
+                if ref.location.startswith("s3://")
+            ]
 
     return _response(200, body)
 

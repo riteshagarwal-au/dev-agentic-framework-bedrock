@@ -13,6 +13,7 @@ is itself the structural guarantee that this agent cannot self-approve.
 
 from __future__ import annotations
 
+import json
 from typing import Any, Protocol
 
 from daf.models.common import ArtifactRef, TokenUsage
@@ -30,6 +31,10 @@ class S3KbClientProtocol(Protocol):
     def retrieve_security_guidance(self, topic: str) -> str: ...
 
 
+class ArtifactWriterProtocol(Protocol):
+    def write(self, trace_id: str, filename: str, content: str, kind: ArtifactKind, artifact_id: str) -> ArtifactRef: ...
+
+
 class SecurityAgent:
     """Security spoke agent — see module docstring for the "never gates
     the run" boundary this class must preserve.
@@ -39,12 +44,14 @@ class SecurityAgent:
         self,
         aws_api_cli_client: AwsApiCliClientProtocol,
         s3_kb_client: S3KbClientProtocol,
+        artifact_writer: ArtifactWriterProtocol | None = None,
     ) -> None:
         self.agent_id: AgentId = AgentId("security")
         self.task_type: TaskType = TaskType.SECURITY_REVIEW
         self.output_schema: type[SpokeResult] = SpokeResult
         self._aws_api_cli_client = aws_api_cli_client
         self._s3_kb_client = s3_kb_client
+        self._artifact_writer = artifact_writer
 
     def execute(self, envelope: TaskEnvelope, tier: Any) -> SpokeResult:
         """Run the IAM-policy check and pull security guidance, and return
@@ -68,13 +75,22 @@ class SecurityAgent:
         else:
             notes = "PASS: no findings"
 
-        output = ArtifactRef(
-            artifactId=f"security-review-{envelope.trace_id}",
-            location=f"s3://daf-artifacts/security-reviews/{envelope.trace_id}.json",
-            locationKind=ArtifactLocationKind.S3_URI,
-            kind=ArtifactKind.OTHER,
-        )
-        _ = guidance  # retrieved for review context; not embedded in the artifact by Phase 1
+        if self._artifact_writer is not None:
+            report = {"policyRef": policy_ref_str, "findings": findings, "guidance": guidance}
+            output = self._artifact_writer.write(
+                trace_id=str(envelope.trace_id),
+                filename="security-review.json",
+                content=json.dumps(report, indent=2),
+                kind=ArtifactKind.OTHER,
+                artifact_id=f"security-review-{envelope.trace_id}",
+            )
+        else:
+            output = ArtifactRef(
+                artifactId=f"security-review-{envelope.trace_id}",
+                location=f"s3://daf-artifacts/security-reviews/{envelope.trace_id}.json",
+                locationKind=ArtifactLocationKind.S3_URI,
+                kind=ArtifactKind.OTHER,
+            )
 
         return SpokeResult(
             output=output,

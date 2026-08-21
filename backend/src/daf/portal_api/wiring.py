@@ -469,7 +469,7 @@ def build_agent_registry() -> dict[TaskType, Any]:
             _CuratedS3KbClient(), _CuratedAwsDocsClient(), _SampleAppFilesystemMcpClient(), audit_log, artifact_writer
         ),
         TaskType.PORTFOLIO_ASSESSMENT: PortfolioAssessmentAgent(_CuratedS3KbClient()),
-        TaskType.SECURITY_REVIEW: SecurityAgent(_RealAwsApiCliClient(), _CuratedS3KbClient()),
+        TaskType.SECURITY_REVIEW: SecurityAgent(_RealAwsApiCliClient(), _CuratedS3KbClient(), artifact_writer),
         TaskType.DEVOPS_EXEC: DevOpsAgent(
             _RealTerraformMcpClient(), _RealGithubMcpClient(), _RealAwsApiCliClient(), artifact_writer
         ),
